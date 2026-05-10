@@ -1,0 +1,26 @@
+# Graph RAG POC dependencies
+# Mirrors pyproject.toml [project.dependencies]
+# Use this if you prefer plain pip over `pip install -e .`
+
+# LLM client
+anthropic>=0.40.0
+
+# Embeddings (pulls in PyTorch ~2GB)
+sentence-transformers>=2.2.0
+
+# Graph data structure
+networkx>=3.0
+
+# Hierarchical Leiden community detection
+# (falls back to networkx.community.louvain if unavailable)
+graspologic>=3.4.0
+
+# Numerics
+numpy>=1.24.0,<3.0
+scikit-learn>=1.3.0
+
+# UX
+tqdm>=4.65.0
+
+# Env file loading
+python-dotenv>=1.0.0

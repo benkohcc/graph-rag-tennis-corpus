@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphrag-tennis-poc"
+version = "0.1.0"
+description = "Graph RAG proof-of-concept comparing graph-based vs vector-based retrieval on a synthetic tennis equipment corpus"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Graph RAG POC" }
+]
+keywords = ["rag", "graph-rag", "knowledge-graph", "anthropic", "claude"]
+
+dependencies = [
+    # LLM client
+    "anthropic>=0.40.0",
+
+    # Embeddings (pulls in PyTorch ~2GB)
+    "sentence-transformers>=2.2.0",
+
+    # Graph data structure
+    "networkx>=3.0",
+
+    # Hierarchical Leiden community detection
+    # (falls back to networkx.community.louvain if unavailable)
+    "graspologic>=3.4.0",
+
+    # Numerics
+    "numpy>=1.24.0,<3.0",
+    "scikit-learn>=1.3.0",
+
+    # UX
+    "tqdm>=4.65.0",
+
+    # .env file loading
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+graphrag-evaluate = "graphrag_poc.evaluate:run_evaluation"
+graphrag-index = "graphrag_poc.pipeline:run_indexing_pipeline"
+
+[tool.setuptools]
+packages = ["graphrag_poc"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "W"]
+ignore = ["E501"]  # line too long, often unavoidable in prompts

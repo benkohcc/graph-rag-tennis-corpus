@@ -1,0 +1,324 @@
+{
+  "metadata": {
+    "corpus_name": "Apex Racquets Tennis Equipment Synthetic Corpus",
+    "corpus_size": 30,
+    "description": "Labeled test queries spanning single-fact, multi-hop, thematic, and adversarial categories. Each query specifies the documents that contain the answer and the reasoning chain required.",
+    "use": "Run both vector RAG and Graph RAG against this corpus, score answers against expected_facts, compare quantitatively."
+  },
+  "queries": [
+
+    {
+      "id": "Q01",
+      "category": "single_fact",
+      "query": "Who is the CEO of Apex Racquets?",
+      "expected_facts": ["Klaus Reinhardt"],
+      "answer_documents": ["02_apex_10k_business_overview.md"],
+      "hop_count": 0,
+      "expected_winner": "tie",
+      "notes": "Vector RAG should match Graph RAG. No traversal benefit."
+    },
+
+    {
+      "id": "Q02",
+      "category": "single_fact",
+      "query": "When was Apex Racquets founded and where is it headquartered?",
+      "expected_facts": ["Founded 1987", "Vienna originally", "Headquartered in Salzburg"],
+      "answer_documents": ["02_apex_10k_business_overview.md", "29_apex_heritage_article.md"],
+      "hop_count": 0,
+      "expected_winner": "tie"
+    },
+
+    {
+      "id": "Q03",
+      "category": "single_fact",
+      "query": "What is the ITF's revised forward deformation range for tournament balls?",
+      "expected_facts": ["0.58 to 0.71 kg"],
+      "answer_documents": ["16_itf_ball_specification_update.md"],
+      "hop_count": 0,
+      "expected_winner": "tie"
+    },
+
+    {
+      "id": "Q04",
+      "category": "two_hop",
+      "query": "How does Volenti's recent acquisition of Filamentrix affect Apex Racquets?",
+      "expected_facts": [
+        "Filamentrix supplies ~55% of Apex's strings under contract through Q2 2026",
+        "Volenti is Apex's principal competitor",
+        "Apex now buys critical strings from a competitor-owned subsidiary",
+        "The arrangement is not tenable long-term per Apex CEO"
+      ],
+      "answer_documents": ["01_apex_10k_risk_factors.md", "12_bloomberg_volenti_filamentrix.md", "04_apex_q1_2025_earnings.md", "21_volenti_press_filamentrix_close.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Bloomberg article never mentions Apex; connection requires graph traversal Apex -> Filamentrix supplier relationship -> Filamentrix acquired by Volenti"
+    },
+
+    {
+      "id": "Q05",
+      "category": "two_hop",
+      "query": "Which Apex executive previously worked at the company's main competitor?",
+      "expected_facts": [
+        "Klaus Reinhardt is Apex CEO",
+        "Reinhardt previously was Head of Product at Volenti Sport",
+        "Volenti is Apex's main competitor"
+      ],
+      "answer_documents": ["02_apex_10k_business_overview.md", "20_volenti_10k_excerpt.md", "29_apex_heritage_article.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Requires connecting CEO identity, prior employer, and identifying Volenti as the principal competitor."
+    },
+
+    {
+      "id": "Q06",
+      "category": "three_hop",
+      "query": "Why is the relationship between Apex's pro stringer and Volenti's top player a potential information leak risk?",
+      "expected_facts": [
+        "Bruno Klimt is Apex/Petrović's stringer",
+        "Klimt also strings for Aleš Drako",
+        "Drako is Volenti's lead endorser",
+        "Volenti is Apex's principal competitor",
+        "Klimt has access to both manufacturers' frame specifications"
+      ],
+      "answer_documents": ["06_apex_press_release_petrovic_signing.md", "09_apex_internal_slack_export.md", "13_wsj_petrovic_injury.md", "19_atp_drako_australian_open.md", "20_volenti_10k_excerpt.md"],
+      "hop_count": 3,
+      "expected_winner": "graph_rag",
+      "notes": "Pure multi-hop: stringer -> dual relationship -> player -> manufacturer -> competitor connection. No single document contains the full chain."
+    },
+
+    {
+      "id": "Q07",
+      "category": "three_hop",
+      "query": "Which suppliers does Apex share with its main competitor Volenti?",
+      "expected_facts": [
+        "Toray Carbon (Mishima facility) supplies both Apex and Volenti",
+        "Filamentrix supplies Apex strings (until 2026); Volenti now owns Filamentrix"
+      ],
+      "answer_documents": ["01_apex_10k_risk_factors.md", "20_volenti_10k_excerpt.md", "11_reuters_toray_earthquake.md", "18_composite_materials_weekly.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Requires intersection of Apex supplier set and Volenti supplier set."
+    },
+
+    {
+      "id": "Q08",
+      "category": "two_hop_adversarial",
+      "query": "Why did Marko Petrović switch from his prior equipment partner to Apex?",
+      "expected_facts": [
+        "Petrović had been with Volenti since age 16",
+        "Petrović and Volenti had a contract dispute starting in 2020",
+        "Allegations of inadequate tour service",
+        "Contract terminated in November 2021 with confidential settlement",
+        "Klaus Reinhardt (former Volenti executive) played central role in negotiating Apex deal"
+      ],
+      "answer_documents": ["14_sbj_petrovic_volenti_dispute.md", "06_apex_press_release_petrovic_signing.md", "13_wsj_petrovic_injury.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "The press release does not name Volenti. The connection requires the SBJ feature article."
+    },
+
+    {
+      "id": "Q09",
+      "category": "two_hop",
+      "query": "How exposed is the entire premium tennis racquet industry to disruption at Toray's Mishima facility?",
+      "expected_facts": [
+        "Apex sources ~68% of premium frame carbon fiber from Mishima",
+        "Volenti sources ~70% from Mishima",
+        "Yokota ~50% from Mishima",
+        "Crestwood ~45% from Mishima",
+        "All four major manufacturers depend on Mishima",
+        "No production-ready alternative for tour-level frames in <18-24 months"
+      ],
+      "answer_documents": ["01_apex_10k_risk_factors.md", "11_reuters_toray_earthquake.md", "15_panpacific_industry_report.md", "18_composite_materials_weekly.md", "20_volenti_10k_excerpt.md", "30_industry_conference_panel.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Requires aggregation across multiple sources to assemble the industry-wide picture."
+    },
+
+    {
+      "id": "Q10",
+      "category": "thematic_global",
+      "query": "What are the main risks Apex Racquets faces?",
+      "expected_facts": [
+        "Supplier concentration risk (Toray Mishima carbon fiber, Filamentrix strings)",
+        "Volenti acquisition of Filamentrix creates competitor-owned supplier dependency",
+        "Petrović injury affecting key endorsement leverage",
+        "Channel pressure from TennisWarehouse promoting Volenti Strike Pro",
+        "ITF ball spec changes affecting ApexCourt ball line",
+        "Limited diversification timeline (18-24+ months for carbon fiber alternatives)"
+      ],
+      "answer_documents": ["01_apex_10k_risk_factors.md", "04_apex_q1_2025_earnings.md", "05_apex_internal_memo_supplier_diversification.md", "11_reuters_toray_earthquake.md", "12_bloomberg_volenti_filamentrix.md", "13_wsj_petrovic_injury.md", "16_itf_ball_specification_update.md", "17_tennis_industry_news_retail.md"],
+      "hop_count": "synthesis",
+      "expected_winner": "graph_rag_with_communities",
+      "notes": "Requires aggregation across multiple risk categories. Vector RAG produces generic summary; Graph RAG with community summaries surfaces the specific cross-document risks."
+    },
+
+    {
+      "id": "Q11",
+      "category": "thematic_global",
+      "query": "What changed in Apex's business situation between Q3 2024 and Q1 2025?",
+      "expected_facts": [
+        "Petrović went from US Open semifinal driver to injured/sidelined",
+        "Toray earthquake disrupted carbon fiber supply (Feb 2025)",
+        "Filamentrix was acquired by Volenti (announced Feb, closed Mar 2025)",
+        "Marketing focus shifted from Petrović to Marchetti",
+        "Revenue moved from +14% growth to -7% decline",
+        "Channel pressure from TennisWarehouse Strike Pro promotion intensified"
+      ],
+      "answer_documents": ["03_apex_q3_2024_earnings.md", "04_apex_q1_2025_earnings.md", "11_reuters_toray_earthquake.md", "12_bloomberg_volenti_filamentrix.md", "13_wsj_petrovic_injury.md", "17_tennis_industry_news_retail.md", "10_apex_marchetti_case_study.md"],
+      "hop_count": "synthesis",
+      "expected_winner": "graph_rag_with_communities",
+      "notes": "Temporal synthesis across two quarters with multiple narrative threads."
+    },
+
+    {
+      "id": "Q12",
+      "category": "thematic_global",
+      "query": "What is the competitive dynamic between Apex and Volenti right now?",
+      "expected_facts": [
+        "Volenti is the larger market share leader (28% vs Apex 17%)",
+        "Volenti acquired Apex's primary string supplier (Filamentrix)",
+        "Volenti's lead endorser Drako reached Australian Open final while Apex's Petrović is injured",
+        "Volenti is funding aggressive promotion at TennisWarehouse undercutting Apex pricing",
+        "Apex CEO Reinhardt is a former Volenti executive",
+        "Volenti CFO and Drako's stringer also string Apex's player Petrović"
+      ],
+      "answer_documents": ["01_apex_10k_risk_factors.md", "04_apex_q1_2025_earnings.md", "12_bloomberg_volenti_filamentrix.md", "13_wsj_petrovic_injury.md", "15_panpacific_industry_report.md", "17_tennis_industry_news_retail.md", "19_atp_drako_australian_open.md", "20_volenti_10k_excerpt.md", "22_volenti_q1_2025_earnings.md"],
+      "hop_count": "synthesis",
+      "expected_winner": "graph_rag_with_communities"
+    },
+
+    {
+      "id": "Q13",
+      "category": "two_hop",
+      "query": "How long until Apex can replace its dependency on Toray Mishima carbon fiber?",
+      "expected_facts": [
+        "Hanil Composites qualification active",
+        "Tour series capability not until Q4 2026",
+        "Club series capability achievable by Q1 2026",
+        "Hexcel option economically prohibitive at current volumes",
+        "Eliminating Toray dependency entirely takes 24+ months minimum"
+      ],
+      "answer_documents": ["05_apex_internal_memo_supplier_diversification.md", "25_hanil_composites_brief.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "The internal memo provides the timeline; the Hanil brief corroborates qualification timelines independently."
+    },
+
+    {
+      "id": "Q14",
+      "category": "single_fact",
+      "query": "What are the three product families in the Apex racquet portfolio?",
+      "expected_facts": ["Apex Tour series", "Apex Club series", "Apex Beginner series"],
+      "answer_documents": ["02_apex_10k_business_overview.md"],
+      "hop_count": 0,
+      "expected_winner": "tie"
+    },
+
+    {
+      "id": "Q15",
+      "category": "adversarial_disambiguation",
+      "query": "Tell me about the company called Apex.",
+      "expected_facts": [
+        "Multiple companies called Apex exist",
+        "Apex Racquets is the Austrian tennis equipment manufacturer (relevant to this corpus)",
+        "Apex Mountaineering Equipment is unrelated"
+      ],
+      "answer_documents": ["02_apex_10k_business_overview.md", "27_apex_mountaineering_disambiguation.md"],
+      "hop_count": 1,
+      "expected_winner": "graph_rag",
+      "notes": "Tests entity disambiguation. Vector RAG may conflate the two; well-built graph keeps them as separate nodes."
+    },
+
+    {
+      "id": "Q16",
+      "category": "uncertain",
+      "query": "Will Volenti renew Apex's Filamentrix string supply contract when it expires in 2026?",
+      "expected_facts": [
+        "Volenti has stated existing contracts will be honored through their terms",
+        "Volenti has explicitly declined to commit to renewals",
+        "Volenti CEO said each conversation will happen in its own commercial context",
+        "Apex has signaled the arrangement is not tenable long-term and is evaluating alternatives",
+        "No definitive answer is available from the corpus"
+      ],
+      "answer_documents": ["12_bloomberg_volenti_filamentrix.md", "21_volenti_press_filamentrix_close.md", "22_volenti_q1_2025_earnings.md", "04_apex_q1_2025_earnings.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Tests whether the system correctly says 'unresolved' rather than fabricating a definitive answer."
+    },
+
+    {
+      "id": "Q17",
+      "category": "two_hop",
+      "query": "How does the ITF ball specification change affect Apex's revenue?",
+      "expected_facts": [
+        "Apex manufactures ApexCourt ball line",
+        "ITF revised compression specs effective Jan 1 2026",
+        "ApexCourt requires recertification testing",
+        "Existing inventory usable through Dec 31 2025",
+        "Manufacturers must redesign/recertify products"
+      ],
+      "answer_documents": ["02_apex_10k_business_overview.md", "16_itf_ball_specification_update.md", "01_apex_10k_risk_factors.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag",
+      "notes": "Connection: Apex makes ApexCourt -> ApexCourt is a tournament ball -> ITF spec change affects tournament balls."
+    },
+
+    {
+      "id": "Q18",
+      "category": "thematic_global",
+      "query": "What are the main supply chain themes across the premium tennis industry?",
+      "expected_facts": [
+        "Industry-wide concentration on Toray Mishima for tour-level carbon fiber",
+        "Vertical integration trend (Volenti acquiring Filamentrix)",
+        "Long qualification cycles for alternative suppliers (18-24+ months)",
+        "Geographic concentration in Japan as structural risk",
+        "ITF specification changes as recurring regulatory risk"
+      ],
+      "answer_documents": ["11_reuters_toray_earthquake.md", "12_bloomberg_volenti_filamentrix.md", "15_panpacific_industry_report.md", "16_itf_ball_specification_update.md", "18_composite_materials_weekly.md", "23_toray_sustainability_report.md", "30_industry_conference_panel.md"],
+      "hop_count": "synthesis",
+      "expected_winner": "graph_rag_with_communities",
+      "notes": "Pure thematic question requiring community summary aggregation. No single document contains the answer."
+    },
+
+    {
+      "id": "Q19",
+      "category": "single_fact",
+      "query": "Who is the lead engineer on Apex's variable density carbon fiber patent?",
+      "expected_facts": ["Henrik Larsson is listed first inventor"],
+      "answer_documents": ["08_apex_patent_filing.md"],
+      "hop_count": 0,
+      "expected_winner": "tie"
+    },
+
+    {
+      "id": "Q20",
+      "category": "two_hop",
+      "query": "Which Apex player did the company's marketing pivot to when Petrović was injured?",
+      "expected_facts": [
+        "Lucia Marchetti",
+        "Italian WTA player ranked No. 24",
+        "Sponsored by Apex since 2021",
+        "Marketing investment expanded for 2025 European clay court season",
+        "Custom signature edition Tour 100 planned for May 2025"
+      ],
+      "answer_documents": ["04_apex_q1_2025_earnings.md", "10_apex_marchetti_case_study.md", "13_wsj_petrovic_injury.md"],
+      "hop_count": 2,
+      "expected_winner": "graph_rag"
+    }
+
+  ],
+
+  "summary": {
+    "total_queries": 20,
+    "by_category": {
+      "single_fact": 5,
+      "two_hop": 7,
+      "three_hop": 2,
+      "thematic_global": 4,
+      "adversarial_disambiguation": 1,
+      "uncertain": 1
+    },
+    "expected_outcome": "Graph RAG should clearly outperform vector RAG on Q4-Q13 (multi-hop) and Q10-Q12, Q18 (thematic). Vector RAG should match Graph RAG on Q1-Q3, Q14, Q19 (single-fact). Use these queries to validate routing logic in your hybrid retriever."
+  }
+}
