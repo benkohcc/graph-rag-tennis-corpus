@@ -103,6 +103,54 @@ All three modes share a set of prompt rules that address failure patterns found 
 - **Uncertainty guard** — the model is explicitly instructed not to infer a definitive conclusion from indirect signals when the corpus withholds an answer. This fixed Q16 (will Volenti renew the contract?) where rich graph context was causing the model to over-synthesise a "likely won't renew" conclusion
 - **Disambiguation instruction** — injected dynamically when multiple canonical graph nodes match the query entity, instructing the model to lead with disambiguation before providing detail
 
+## Evaluation approach
+
+### Why LLM-as-judge
+
+The corpus is synthetic and the facts are controlled, so a reference-based automatic metric (exact match, ROUGE, BertScore) would work in principle. We chose LLM-as-judge instead for two reasons:
+
+1. **Natural language answers don't have a single correct form.** "Toray supplies carbon fibre to Apex" and "Apex's primary carbon fibre source is Toray" are equivalent correct answers. Exact match would penalise both; an LLM judge handles paraphrase naturally.
+2. **The interesting failure modes are qualitative.** Over-inference (the model concludes something the corpus doesn't state), hallucination, and incomplete coverage are easier to detect with a judge that reads the full answer than with a similarity metric that compares token distributions.
+
+### Test set design
+
+The 20 queries were written before any retrieval code was run, with deliberate coverage across failure modes:
+
+| Category | N | What it tests |
+|----------|---|---------------|
+| `single_fact` | 5 | Direct lookups — baseline floor both systems should hit |
+| `two_hop` | 6 | Facts that require traversing two document-spanning relationships |
+| `three_hop` | 2 | Longer chains requiring three connected relationships across docs |
+| `two_hop_adversarial` | 1 | Multi-hop with a plausible-but-wrong shortcut answer |
+| `thematic_global` | 4 | Synthesis questions — no single chunk holds the answer |
+| `adversarial_disambiguation` | 1 | Two entities share a name; correct answer requires identifying both |
+| `uncertain` | 1 | Corpus deliberately withholds the answer; correct response is "unknown" |
+
+Each query has a list of `expected_facts` — atomic claims the answer should cover — rather than a gold-standard string. The judge scores how many of those facts the answer addresses, not how similar it is to a reference phrasing.
+
+### Scoring rubric
+
+The judge (Claude Sonnet) receives the question, the list of expected facts, and the system's answer, then returns a 0–3 score:
+
+| Score | Meaning |
+|-------|---------|
+| 0 | Wrong — misses the answer, fabricates, or contradicts expected facts |
+| 1 | Partial — gets some facts but misses key points, or contains errors |
+| 2 | Mostly correct — covers most facts, may miss minor nuance |
+| 3 | Fully correct — covers all expected facts with appropriate grounding |
+
+Both systems are scored against the same expected facts in the same prompt, so the judge's implicit standards are consistent across the comparison.
+
+### What the judge doesn't catch
+
+- **Verbosity:** A graph answer might use 400 words where 80 would do. The judge scores coverage, not concision.
+- **Hallucinations outside the expected facts:** If a system fabricates a plausible-sounding additional fact that isn't in `expected_facts`, the judge may not penalise it unless it directly contradicts something.
+- **Latency and cost:** The judge scores answer quality only. Cost and latency are measured separately (see [Cost and latency](#cost-and-latency)).
+
+### Preventing judge drift
+
+Running the judge as a single batch (not interleaved with generation) keeps the model's context clean between queries. Scoring both systems on the same query in the same call was considered but rejected — it risks the judge anchoring on the first answer when scoring the second. Instead, each answer is scored independently in its own API call.
+
 ## Results
 
 ```
