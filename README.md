@@ -10,6 +10,7 @@ Graph RAG wins on every query category that requires reasoning across relationsh
 - 20 labeled test queries spanning single-fact, two-hop, three-hop, thematic-global, adversarial, and uncertainty categories
 - Full Python pipeline: chunk → extract → graph → communities → retrieve → answer → score
 - Side-by-side comparison: vector RAG and Graph RAG run against the same queries, both scored by Claude as judge
+- [GRAPH_MAP.md](GRAPH_MAP.md) — full map of the extracted knowledge graph: 148 nodes, 302 edges, with node descriptions, aliases, and all relationships
 
 Total runtime: ~5–8 minutes. Total cost: ~$1.20 in Anthropic API charges.
 
@@ -193,7 +194,7 @@ make fresh         clean + run (full re-evaluation from scratch)
 .
 ├── CLAUDE.md                ← Project context for Claude Code
 ├── README.md                ← You are here
-├── [GRAPH_MAP.md](GRAPH_MAP.md)             ← Full map of the knowledge graph (148 nodes, 302 edges)
+├── GRAPH_MAP.md             ← Full map of the knowledge graph (148 nodes, 302 edges)
 ├── pyproject.toml           ← Python package metadata + deps
 ├── requirements.txt         ← Same deps in pip format
 ├── Makefile                 ← Common commands
